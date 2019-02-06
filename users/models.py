@@ -14,3 +14,11 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+
+    @classmethod
+    def user_pre_save_handler(cls, sender, instance, **kwargs):
+        if instance.is_superuser and instance.is_staff:
+            instance.type = 'admin'
+
+
+models.signals.pre_save.connect(CustomUser.user_pre_save_handler, sender=CustomUser)

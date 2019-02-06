@@ -15,8 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import TemplateView
 
 urlpatterns = [
-    path('', include('topic_registration.urls')),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('topic_registration/', include('topic_registration.urls')),
     path('admin/', admin.site.urls),
+    path('users/', include('django.contrib.auth.urls'))
 ]
+
+admin.site.site_header = "TRS Admin"
+admin.site.site_title = "TRS Admin Portal"
+admin.site.index_title = "Welcome to TRS"

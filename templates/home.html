@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}System rejestracji tematow{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <h1>Witaj w systemie rejestracji tematow.</h1>
+      {% if user.is_authenticated %}
+        <p>Zarejestruj sie na jeden z tematow zgloszoynch przez prowadzacego Twoja grupe.</p>
+        <a href="{% url 'topic_registration:topic_registration' %}">
+          <button class="btn btn-primary">Zarejestruj temat</button>
+        </a>
+      {% else %}
+        <p>Po zalogowaniu bedziesz mial mozliwosc rejetracji na
+        jeden z dostepnych tematow zgloszoynch przez prowadzacego Twoja grupe.</p>
+        <a href="{% url 'login' %}">
+          <button class="btn btn-primary">Zaloguj sie</button>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

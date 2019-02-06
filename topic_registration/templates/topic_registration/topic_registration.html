@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block script %}
+    // Set the date we're counting down to
+    var startDate = new Date("{{ start_date }}") - new Date().getTimezoneOffset()*60*1000;
+    var endDate = new Date("{{ end_date }}") - new Date().getTimezoneOffset()*60*1000;
+
+    // Get todays date and time
+    var now = new Date() - new Date().getTimezoneOffset()*60*1000;
+
+    if (now > endDate) {
+        document.getElementById('status').innerHTML = "Zakonczona";
+        document.getElementById('register').disabled = true;
+        document.getElementById('status').style.color = "red";
+    } else if (now >= startDate) {
+        document.getElementById('status').innerHTML = "Trwa";
+        document.getElementById('register').disabled = false;
+        document.getElementById('status').style.color = "green";
+    }
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+        var now = new Date() - new Date().getTimezoneOffset()*60*1000;
+        // Find the distance between now and the count down date
+        var distance = startDate - now;
+        // If the count down is over, stop
+        if (distance <= 0 && now <= endDate) {
+            document.getElementById('status').innerHTML = "Trwa";
+            document.getElementById('register').disabled = false;
+            document.getElementById('status').style.color = "green";
+        } else if (now > endDate) {
+            clearInterval(x);
+            document.getElementById('status').innerHTML = "Zakonczona";
+            document.getElementById('register').disabled = true;
+            document.getElementById('status').style.color = "red";
+        } else {
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Output the result in an element with id="status"
+            var status = "Rozpocznie sie za ";
+            if (days) status += days + "dni ";
+            if (hours) status += hours + " godzin ";
+            if (minutes) status += minutes + " minut ";
+            if (seconds) status += seconds + " sekund ";
+
+            document.getElementById("status").innerHTML = status;
+            document.getElementById('status').style.color = "orange";
+        }
+    }, 1000);
+
+{% endblock %}
+
+{% block title %}Rejestracja tematu{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <div class="card">
+        <div class="card-body">
+            <h1>Rejestracja tematu</h1>
+            <p>Mozesz zarezerwowac tylko jeden temat, ktory jest w danym momencie dostepny.</p>
+            <p>Rejestracja odbywa sie tylko w ustalonym terminie.</p>
+            <strong>Pamietaj!</strong><p>Powtorna rejestracja na inny temat spowoduje usuniecie poprzedniego wyboru.</p>
+            <hr>
+            <p>Poczatek: {{ start_date }}</p>
+            <p>Koniec: {{ end_date }}</p>
+            <p>Status: <span id="status"></span></p>
+            <p>Dostepne tematy:</p>
+            <form action="{% url 'topic_registration:topic_register' %}"  method="post" style="margin-bottom: 10px;">
+                {% csrf_token %}
+                {% for topic_name in topic_name_list %}
+                    <input type="radio" name="topic" id="topic{{ forloop.counter }}"
+                           value="{{ topic_name.0 }}" {% if topic_name.1 %}disabled{% endif %}>
+                    <label for="topic{{ forloop.counter }}" {% if topic_name.2 %}style="color: blue;"{% endif %}>
+                        {{ topic_name.0 }} {% if topic_name.2 %}(TWOJ TEMAT) {% else %}
+                        {% if topic_name.1 %}(ZAREZERWOWANY){% endif %}{% endif %}</label><br>
+                {% endfor %}
+                <input type="submit" class="btn btn-primary" id="register" value="Zarejestruj" style="margin-top: 10px;" disabled>
+            </form>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger {% else %} alert-{{ message.tags }}{% endif %}"
+                         role="alert" style="display: inline-block;margin: 0;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}
